@@ -33,8 +33,8 @@ object FullLoad {
     val trainingData = df.limit(splitPoint.toInt)
     val testData = df.except(trainingData)
 
-    // Upload the training data to Hive
-    trainingData.write.mode(SaveMode.Overwrite).saveAsTable("training_data")
+//    // Upload the training data to Hive
+//    trainingData.write.mode(SaveMode.Overwrite).saveAsTable("training_data")
 
     // Check if the Hive database exists, and if not, create it
     val hiveDatabase = "Sparky"
@@ -45,7 +45,7 @@ object FullLoad {
     trainingData.write.mode(SaveMode.Overwrite).saveAsTable("car_insurance_claims")
 
     // Perform a full load of the data
-    val fullLoadData = spark.table("training_data")
+//    val fullLoadData = spark.table("training_data")
 
     // Perform further processing or analysis on the full load data if needed
 
