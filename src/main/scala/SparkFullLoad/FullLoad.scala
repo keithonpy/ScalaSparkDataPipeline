@@ -10,7 +10,7 @@ object FullLoad {
     val spark = SparkSession.builder
                 .master("local[*]")
                 .appName("FullLoad")
-                //.enableHiveSupport()
+                .enableHiveSupport()
                 .getOrCreate()
 
 
@@ -22,17 +22,40 @@ object FullLoad {
             .option("password", "WelcomeItc@2022")
             .load()
 
-    // Count total number of rows
-    val totalRows = df.count()
+    // Get the total count of rows
+    val rowCount = df.count()
 
-    // Calculate row numbers for 80% and 20% splits
-    val split80Percent = (totalRows * 0.8).toLong
-    val split20Percent = totalRows - split80Percent
+    // Calculate the row numbers for splitting (80% and 20%)
+    val splitPoint = (rowCount * 0.8).toLong
+
+    // Split the data into training and test based on row numbers
+    val trainingData = df.limit(splitPoint.toInt)
+    val testData = df.except(trainingData)
+
+    // Upload the training data to Hive
+    trainingData.write.mode(SaveMode.Overwrite).saveAsTable("training_data")
+
+    // Check if the Hive database exists, and if not, create it
+    val hiveDatabase = "Sparky"
+    spark.sql(s"CREATE DATABASE IF NOT EXISTS $hiveDatabase")
+
+    // Save the data to the Hive table in the created database
+    spark.sql(s"USE $hiveDatabase")
+    trainingData.write.mode(SaveMode.Overwrite).saveAsTable("car_insurance_claims")
+
+    // Perform a full load of the data
+    val fullLoadData = spark.table("training_data")
+
+    // Perform further processing or analysis on the full load data if needed
+
+    // Stop SparkSession
+    spark.stop()
 
 
-    println(df.printSchema())
-    println(df.show(10))
-    println("Automated")
+
+
+
+
   }
 
 }
